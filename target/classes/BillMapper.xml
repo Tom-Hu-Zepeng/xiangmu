@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+ <mapper namespace="com.accp.bill.dao.IBill">
+ 	<insert id="saveBill">
+ 		INSERT INTO tb_bill(`billno`,`billdate`,`suppliername`,`supplieraddress`,`department`,`warehouse`,`buyer`,`executor`)
+ 		VALUES(#{bill.billno},#{bill.billdate},#{bill.suppliername},#{bill.supplieraddress},#{bill.department},#{bill.warehouse},#{bill.buyer},#{bill.executor});
+ 		<if test="bill.detail.size()!=0">
+ 			INSERT INTO tb_detail(`billno`,`goodsname`,`goodsnum`,`goodsprice`,`goodsmoneyamt`,`ispresent`) values
+ 			<foreach collection="bill.detail" item="temp" separator=",">
+ 				(#{bill.billno},#{temp.goodsname},#{temp.goodsnum},#{temp.goodsprice},#{temp.goodsmoneyamt},#{temp.ispresent})
+ 			</foreach>
+ 		</if>
+ 	</insert>
+ 	
+ 	<update id="updateBill">
+ 		UPDATE tb_bill SET `billdate`=#{bill.billdate},suppliername=#{bill.suppliername},supplieraddress=#{bill.supplieraddress},department=#{bill.department},warehouse=#{bill.warehouse},buyer=#{bill.buyer},executor=#{bill.executor}
+		WHERE billno=#{bill.billno};
+		<if test="bill.detail.size()!=0">
+			<foreach collection="bill.detail" item="temp">
+				UPDATE tb_detail SET goodsname=#{temp.goodsname},goodsnum=#{temp.goodsnum},goodsprice=#{temp.goodsprice},goodsmoneyamt=#{temp.goodsmoneyamt},ispresent=#{temp.ispresent}
+				WHERE billno=#{bill.billno}
+			</foreach>
+		</if>
+ 	</update>
+ 	
+ 	<select id="queryById" resultType="tb_detail">
+ 		SELECT * FROM tb_detail
+ 		<where>
+ 			billno =#{billno}
+ 		</where>
+ 	</select>
+ 	
+ 	<select id="queryByBillId" resultMap="find1">
+ 		SELECT * FROM tb_bill
+ 		<where>
+ 			billno =#{billno}
+ 		</where>
+ 	</select>
+ 	
+ 	<resultMap type="com.accp.bill.pojo.Tb_bill" id="find1">
+ 		<id column="billno" property="billno"/>
+		<result column="billdate" property="billdate"/>
+		<result column="suppliername" property="suppliername"/>
+		<result column="supplieraddress" property="supplieraddress"/>
+		<result column="department" property="department"/>
+		<result column="warehouse" property="warehouse"/>
+		<result column="buyer" property="buyer"/>
+		<result column="executor" property="executor"/>
+		<collection property="detail" column="billno" select="queryByDao"></collection>
+ 	</resultMap>
+ 	
+ 	<select id="queryByDao" resultType="com.accp.bill.pojo.Tb_detail">
+ 		select * from tb_detail where billno=#{0}
+ 	</select>
+ </mapper>

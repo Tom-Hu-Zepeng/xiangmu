@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h1>采购入库</h1>
+	单据编号：
+	<input type="text" id="billno">
+	<br /> 单据日期：
+	<input type="text" id="billdate">
+	<br /> 供应商：
+	<input type="text" id="suppliername">
+	<br /> 供应商地址：
+	<input type="text" id="supplieraddress">
+	<br /> 部门：
+	<input type="text" id="department">
+	<br />仓库：
+	<input type="text" id="warehouse">
+	<br /> 采购人员：
+	<input type="text" id="executor">
+	<br />制单人员：
+	<input type="text" id="buyer">
+	<br /> 入库明细
+	<textarea rows="5" cols="55" id="detail"></textarea>
+	<br>
+	<input type="button" value="保存" id="addBtn">
+	<input type="button" value="清空" id="rest">
+</body>
+<script src="../js/jquery-1.12.4.js"></script>
+<script type="text/javascript">
+	$(document).on("blur", "#billno", function() {
+		var idh = $("#billno").val();
+		$.getJSON("/sbill/api/bill/queryById", {
+			id : idh
+		}, function(data) {
+			$.each(data, function(i, temp) {
+				$("#billno").val(temp.billno);
+				$("#billdate").val(temp.billdate);
+				$("#suppliername").val(temp.suppliername);
+				$("#supplieraddress").val(temp.supplieraddress);
+				$("#department").val(temp.department);
+				$("#buyer").val(temp.buyer);
+				$("#executor").val(temp.executor);
+				$("#warehouse").val(temp.warehouse);
+				$.each(temp.detail, function(i, temp1) {
+					$("#detail").val("[" + JSON.stringify(temp1) + "]");
+				});
+			});
+		});
+	})
+
+	//加入
+	function first() {
+		$("#billno").val("");
+		$("#billdate").val("");
+		$("#suppliername").val("");
+		$("#supplieraddress").val("");
+		$("#department").val("");
+		$("#buyer").val("");
+		$("#executor").val("");
+		$("#warehouse").val("");
+		$("#detail").val("");
+	}
+
+	$(document).on("click", "#rest", function() {
+		first();
+	});
+
+	$(document).on("click", "#addBtn", function() {
+		var bill = {};
+		bill["billno"] = $.trim($("#billno").val());
+		bill["billdate"] = $.trim($("#billdate").val());
+		bill["suppliername"] = $.trim($("#suppliername").val());
+		bill["supplieraddress"] = $.trim($("#supplieraddress").val());
+		bill["department"] = $.trim($("#department").val());
+		bill["buyer"] = $.trim($("#buyer").val());
+		bill["executor"] = $.trim($("#executor").val());
+		bill["warehouse"] = $.trim($("#warehouse").val());
+		bill["detail"] = JSON.parse($.trim($("#detail").val()));
+		$.ajax("/sbill/api/bill/add1", {
+			type : "post",//非常重要
+			dataType : "json",
+			contentType : "application/json",//非常重要
+			data : JSON.stringify(bill),//非常重要
+			success : function(data) {
+				if (data.code == 200) {
+					alert("保存成功");
+					first();
+
+				} else {
+					alert("保存失败");
+				}
+			}
+		});
+	});
+
+	//加入
+</script>
+</html>
